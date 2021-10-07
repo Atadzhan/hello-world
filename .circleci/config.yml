@@ -1,29 +1,15 @@
-version: 2.1
-
+version: 2
 jobs:
   build:
-    parameters:
-      org_name:
-        type: string
-        default: my_org
-      repo_name:
-        type: string
-        default: my_repo
     docker:
-      - image: circleci/go:1.15.0
+      # DLC does nothing here, its caching depends on commonality of the image layers.
+      - image: circleci/node:14.17.3-buster-browsers
         auth:
           username: mydockerhub-user
           password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
     steps:
-      - run: echo "project directory is go/src/github.com/<< parameters.org_name >>/<< parameters.repo_name >>"
-
-workflows:
-  my_workflow:
-    jobs:
-      - build:
-          org_name: my_organization
-          repo_name: project1
-
-      - build:
-          org_name: my_organization
-          repo_name: project2
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      # DLC will explicitly cache layers here and try to avoid rebuilding.
+      - run: docker build .
