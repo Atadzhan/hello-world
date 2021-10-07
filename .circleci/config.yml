@@ -1,25 +1,45 @@
 # .circleci/config.yml
 version: 2.1
-
 jobs:
-  build-medium:
-    machine:
-      image: ubuntu-2004:202101-01
-    resource_class: arm.medium
+  build-and-test:
+    macos:
+      xcode: 11.3.0
+    environment:
+      FL_OUTPUT_DIR: output
+      FASTLANE_LANE: test
     steps:
-      - run: uname -a
-      - run: echo "Hello, Arm!"
+      - checkout
+      - run: bundle install
+      - run:
+          name: Fastlane
+          command: bundle exec fastlane $FASTLANE_LANE
+      - store_artifacts:
+          path: output
+      - store_test_results:
+          path: output/scan
 
-  build-large:
-    machine:
-      image: ubuntu-2004:202101-01
-    resource_class: arm.large
+  adhoc:
+    macos:
+      xcode: 11.3.0
+    environment:
+      FL_OUTPUT_DIR: output
+      FASTLANE_LANE: adhoc
     steps:
-      - run: uname -a
-      - run: echo "Hello, Arm!"
+      - checkout
+      - run: bundle install
+      - run:
+          name: Fastlane
+          command: bundle exec fastlane $FASTLANE_LANE
+      - store_artifacts:
+          path: output
 
 workflows:
-  build:
+  build-test-adhoc:
     jobs:
-      - build-medium
-      - build-large
+      - build-and-test
+      - adhoc:
+          filters:
+            branches:
+              only: development
+          requires:
+            - build-and-test
