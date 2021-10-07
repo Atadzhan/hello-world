@@ -1,17 +1,20 @@
 version: 2.1
 
+workflows:
+  test-env-vars:
+    jobs:
+      - build
+
 jobs:
   build:
     docker:
-      - image: smaant/lein-flyway:2.7.1-4.0.3
+      - image: cimg/base:2020.01
         auth:
           username: mydockerhub-user
           password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
     steps:
       - checkout
       - run:
-          name: Run migrations
-          command: sql/docker-entrypoint.sh sql
-          # Environment variable for a single command shell
-          environment:
-            DATABASE_URL: postgres://conductor:@localhost:5432/conductor_test
+          name: "echo an env var that is part of our project"
+          command: |
+            echo $MY_ENV_VAR # this env var must be set within the project
