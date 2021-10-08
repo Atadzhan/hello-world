@@ -1,32 +1,18 @@
-jobs:
-  build:
-    docker:
-      - image: buildpack-deps:trusty # primary container
-        auth:
-          username: mydockerhub-user
-          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
-        environment:
-          ENV: CI
+version: 2.1
 
-      - image: mongo:2.6.8
-        auth:
-          username: mydockerhub-user
-          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
-        command: [--smallfiles]
+orbs:
+  sauce-connect: saucelabs/sauce-connect@1.0.1
 
-      - image: postgres:9.4.1
-        auth:
-          username: mydockerhub-user
-          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
-        environment:
-          POSTGRES_USER: root
-
-      - image: redis@sha256:54057dd7e125ca41afe526a877e8bd35ec2cdd33b9217e022ed37bdcf7d09673
-        auth:
-          username: mydockerhub-user
-          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
-
-      - image: acme-private/private-image:321
-        auth:
-          username: mydockerhub-user
-          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
+workflows:
+  browser_tests:
+    jobs:
+      - sauce-connect/with_proxy:
+          name: Chrome Tests
+          steps:
+            - run: mvn verify -B -Dsauce.browser=chrome  -Dsauce.tunnel="chrome"
+          tunnel_identifier: chrome
+      - sauce-connect/with_proxy:
+          name: Safari Tests
+          steps:
+            - run: mvn verify -B -Dsauce.browser=safari  -Dsauce.tunnel="safari"
+          tunnel_identifier: safari
