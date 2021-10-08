@@ -1,13 +1,13 @@
 version: 2.1
+
 jobs:
   build:
+    circleci_ip_ranges: true # opts the job into the IP ranges feature
     docker:
-      - image: circleci/node:latest
-        auth:
-          username: mydockerhub-user
-          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
-    environment:
-      IMAGETAG: latest
-    working_directory: ~/main
+      - image: curlimages/curl
     steps:
-      - run: echo "This is pipeline ID << pipeline.id >>"
+      - run: echo “Hello World”
+workflows:
+  build-workflow:
+    jobs:
+      - build
