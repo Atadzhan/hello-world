@@ -1,13 +1,36 @@
 version: 2.1
 
-jobs:
-  build:
-    circleci_ip_ranges: true # opts the job into the IP ranges feature
+executors:
+  linux-13:
     docker:
-      - image: curlimages/curl
+      - image: cimg/node:13.13
+        auth:
+          username: mydockerhub-user
+          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
+  macos: &macos-executor
+    macos:
+      xcode: 11.4
+
+jobs:
+  test:
+    parameters:
+      os:
+        type: executor
+      node-version:
+        type: string
+    executor: << parameters.os >>
     steps:
-      - run: echo “Hello World”
+      - checkout
+      - when:
+          condition:
+            equal: [ *macos-executor, << parameters.os >> ]
+          steps:
+            - run: echo << parameters.node-version >>
+      - run: echo 0
+
 workflows:
-  build-workflow:
+  all-tests:
     jobs:
-      - build
+      - test:
+          os: macos
+          node-version: "13.13.0"
