@@ -1,25 +1,13 @@
 version: 2.1
-
-jobs: # conditional steps may also be defined in `commands:`
-  job_with_optional_custom_checkout:
-    parameters:
-      custom_checkout:
-        type: string
-        default: ""
-    machine:
-      image: ubuntu-2004:202107-02
+jobs:
+  build:
+    docker:
+      - image: circleci/node:latest
+        auth:
+          username: mydockerhub-user
+          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
+    environment:
+      IMAGETAG: latest
+    working_directory: ~/main
     steps:
-      - when:
-          condition: <<parameters.custom_checkout>>
-          steps:
-            - run: echo "my custom checkout"
-      - unless:
-          condition: <<parameters.custom_checkout>>
-          steps:
-            - checkout
-workflows:
-  build-test-deploy:
-    jobs:
-      - job_with_optional_custom_checkout:
-          custom_checkout: "any non-empty string is truthy"
-      - job_with_optional_custom_checkout
+      - run: echo "This is pipeline ID << pipeline.id >>"
